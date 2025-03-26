@@ -15,13 +15,10 @@ import java.util.stream.Collectors;
 @Mapper(componentModel = "spring")
 public interface UserMapper {
     User toUser(UserCreationRequest request);
-    void updateUser(@MappingTarget User user, UserUpdateRequest request);
-    UserResponse toUserResponse(User user);
-    default String map(Role role) {
-        return role.getName();
-    }
 
-    default Set<String> map(Set<Role> roles) {
-        return roles.stream().map(this::map).collect(Collectors.toSet());
-    }
+    @Mapping(target = "roles", ignore = true)
+    void updateUser(@MappingTarget User user, UserUpdateRequest request);
+
+    UserResponse toUserResponse(User user);
+
 }

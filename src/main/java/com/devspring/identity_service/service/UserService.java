@@ -8,6 +8,7 @@ import com.devspring.identity_service.enums.Role;
 import com.devspring.identity_service.exception.AppException;
 import com.devspring.identity_service.exception.ErrorCode;
 import com.devspring.identity_service.mapper.UserMapper;
+import com.devspring.identity_service.repository.RoleRepository;
 import com.devspring.identity_service.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +34,7 @@ public class UserService {
      UserRepository userRepository;
      UserMapper userMapper;
      PasswordEncoder passwordEncoder;
+     RoleRepository roleRepository;
 
     public User createUser(UserCreationRequest request) {
 
@@ -46,11 +48,9 @@ public class UserService {
        HashSet<String> roles = new HashSet<>();
        roles.add(Role.USER.name());
 
-       //user.setRoles(roles);
-
        return userRepository.save(user);
     }
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public List<UserResponse> getUser() {
         log.info("In method getUser");
         return userRepository.findAll().stream().map(userMapper::toUserResponse).toList();
@@ -61,8 +61,14 @@ public class UserService {
         return userMapper.toUserResponse(userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED)));
     }
     public UserResponse updateUser(UserUpdateRequest request, String id) {
-        User user = userRepository.findById(id).orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> new AppException(ErrorCode.USER_NOT_EXISTED));
+
         userMapper.updateUser(user, request);
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        var roles = roleRepository.findAllById(request.getRoles());
+        user.setRoles(new HashSet<>(roles));
+
         return userMapper.toUserResponse(userRepository.save(user));
     }
     public void deleteUser(String id) {
