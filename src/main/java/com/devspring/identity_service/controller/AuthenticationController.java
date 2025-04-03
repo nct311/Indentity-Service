@@ -3,6 +3,7 @@ package com.devspring.identity_service.controller;
 import com.devspring.identity_service.dto.request.ApiResponse;
 import com.devspring.identity_service.dto.request.AuthenticationRequest;
 import com.devspring.identity_service.dto.request.IntrospectRequest;
+import com.devspring.identity_service.dto.request.LogoutRequest;
 import com.devspring.identity_service.dto.response.AuthenticationResponse;
 import com.devspring.identity_service.dto.response.IntrospectResponse;
 import com.devspring.identity_service.service.AuthenticationService;
@@ -23,7 +24,7 @@ import java.text.ParseException;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AuthenticationController {
     AuthenticationService authenticationService;
-@PostMapping("/token")
+    @PostMapping("/token")
     ApiResponse<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
          var result = authenticationService.authenticate(request);
         return ApiResponse.<AuthenticationResponse>builder()
@@ -35,6 +36,13 @@ public class AuthenticationController {
         var result = authenticationService.introspectResponse(request);
         return ApiResponse.<IntrospectResponse>builder()
                 .result(result)
+                .build();
+    }
+    @PostMapping("/logout")
+    ApiResponse<Void> logout(@RequestBody LogoutRequest request) throws ParseException, JOSEException {
+        authenticationService.logout(request);
+        return ApiResponse.<Void>builder()
+                .result(null)
                 .build();
     }
 
