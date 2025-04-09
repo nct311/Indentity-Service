@@ -3,6 +3,7 @@ package com.devspring.identity_service.service;
 import com.devspring.identity_service.dto.request.AuthenticationRequest;
 import com.devspring.identity_service.dto.request.IntrospectRequest;
 import com.devspring.identity_service.dto.request.LogoutRequest;
+import com.devspring.identity_service.dto.request.RefreshRequest;
 import com.devspring.identity_service.dto.response.AuthenticationResponse;
 import com.devspring.identity_service.dto.response.IntrospectResponse;
 import com.devspring.identity_service.entity.InvalidatedToken;
@@ -115,6 +116,29 @@ public class AuthenticationService {
         return signedJWT;
     }
 
+    public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
+        var signedToken = verifyToken(request.getToken());
+
+        var jit = signedToken.getJWTClaimsSet().getJWTID();
+        var expirationTime = signedToken.getJWTClaimsSet().getExpirationTime();
+        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+                .id(jit)
+                .expiryTime(expirationTime)
+                .build();
+
+        invalidatedTokenRepository.save(invalidatedToken);
+
+        var username = signedToken.getJWTClaimsSet().getSubject();
+        var user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(ErrorCode.UNAUTHENTICATED));
+
+        var token = generateToken(user);
+
+        return AuthenticationResponse.builder()
+                .token(token)
+                .authenticated(true)
+                .build();
+    }
 
     private String buildScope(User user){
         StringJoiner scopeJoiner = new StringJoiner(" ");

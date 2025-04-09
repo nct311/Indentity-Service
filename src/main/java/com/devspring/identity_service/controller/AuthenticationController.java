@@ -1,9 +1,6 @@
 package com.devspring.identity_service.controller;
 
-import com.devspring.identity_service.dto.request.ApiResponse;
-import com.devspring.identity_service.dto.request.AuthenticationRequest;
-import com.devspring.identity_service.dto.request.IntrospectRequest;
-import com.devspring.identity_service.dto.request.LogoutRequest;
+import com.devspring.identity_service.dto.request.*;
 import com.devspring.identity_service.dto.response.AuthenticationResponse;
 import com.devspring.identity_service.dto.response.IntrospectResponse;
 import com.devspring.identity_service.service.AuthenticationService;
@@ -45,5 +42,11 @@ public class AuthenticationController {
                 .result(null)
                 .build();
     }
-
+    @PostMapping("/refresh")
+    ApiResponse<AuthenticationResponse> authenticate(@RequestBody RefreshRequest request) throws ParseException, JOSEException {
+        var result = authenticationService.refreshToken(request);
+        return ApiResponse.<AuthenticationResponse>builder()
+                .result(result)
+                .build();
+    }
 }
