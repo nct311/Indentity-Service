@@ -1,10 +1,10 @@
 package com.devspring.identity_service.dto.response;
 
-import lombok.*;
-import lombok.experimental.FieldDefaults;
-
 import java.time.LocalDate;
 import java.util.Set;
+
+import lombok.*;
+import lombok.experimental.FieldDefaults;
 
 @Data
 @Builder
@@ -12,10 +12,10 @@ import java.util.Set;
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserResponse {
-     String id;
-     String username;
-     String firstName;
-     String lastName;
-     LocalDate dob;
-     Set<RoleRespone> roles;
+    String id;
+    String username;
+    String firstName;
+    String lastName;
+    LocalDate dob;
+    Set<RoleRespone> roles;
 }
