@@ -46,18 +46,20 @@ public class AuthenticationService {
     InvalidatedTokenRepository invalidatedTokenRepository;
 
     @NonFinal
-    @Value("${spring.jwt.signerKey}")
-    protected String SIGNED_KEY;
+    @Value("${jwt.signerKey}")
+    protected String SIGNER_KEY;
 
     @NonFinal
-    @Value("${spring.jwt.valid-duration}")
+    @Value("${jwt.valid-duration}")
     protected long VALID_DURATION;
 
     @NonFinal
-    @Value("${spring.jwt.refreshable-duration}")
+    @Value("${jwt.refreshable-duration}")
     protected long REFRESHABLE_DURATION;
 
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        log.info("SignKey:{}", SIGNER_KEY);
+
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder(10);
 
         var user = userRepository
@@ -85,7 +87,7 @@ public class AuthenticationService {
 
         JWSObject jwsObject = new JWSObject(header, payload);
         try {
-            jwsObject.sign(new MACSigner(SIGNED_KEY.getBytes()));
+            jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
             return jwsObject.serialize();
         } catch (JOSEException e) {
             log.error("cannot create token", e);
@@ -111,7 +113,7 @@ public class AuthenticationService {
     }
 
     private SignedJWT verifyToken(String token, boolean isRefresh) throws ParseException, JOSEException {
-        JWSVerifier verifier = new MACVerifier(SIGNED_KEY.getBytes());
+        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
 
         SignedJWT signedJWT = SignedJWT.parse(token);
 
